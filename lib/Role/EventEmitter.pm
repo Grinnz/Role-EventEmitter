@@ -1,9 +1,9 @@
 package Role::EventEmitter;
 
-use Moo::Role;
 use Scalar::Util qw(blessed weaken);
-
 use constant DEBUG => $ENV{ROLE_EVENTEMITTER_DEBUG} || 0;
+
+use Moo::Role;
 
 our $VERSION = '0.001';
 
