@@ -5,7 +5,7 @@ use constant DEBUG => $ENV{ROLE_EVENTEMITTER_DEBUG} || 0;
 
 use Moo::Role;
 
-our $VERSION = '0.001';
+our $VERSION = '0.002';
 
 has '_events' => (
   is => 'ro',
