@@ -1,73 +1,4 @@
-package Role::EventEmitter;
-
-use Moo::Role;
-use Scalar::Util qw(blessed weaken);
-
-use constant DEBUG => $ENV{ROLE_EVENTEMITTER_DEBUG} || 0;
-
-our $VERSION = '0.001';
-
-has '_events' => (
-  is => 'ro',
-  lazy => 1,
-  default => sub { {} },
-  init_arg => undef,
-);
-
-sub catch { $_[0]->on(error => $_[1]) and return $_[0] }
-
-sub emit {
-  my ($self, $name) = (shift, shift);
-
-  if (my $s = $self->_events->{$name}) {
-    warn "-- Emit $name in @{[blessed $self]} (@{[scalar @$s]})\n" if DEBUG;
-    for my $cb (@$s) { $self->$cb(@_) }
-  }
-  else {
-    warn "-- Emit $name in @{[blessed $self]} (0)\n" if DEBUG;
-    die "@{[blessed $self]}: $_[0]" if $name eq 'error';
-  }
-
-  return $self;
-}
-
-sub has_subscribers { !!shift->_events->{shift()} }
-
-sub on { push @{$_[0]->_events->{$_[1]}}, $_[2] and return $_[2] }
-
-sub once {
-  my ($self, $name, $cb) = @_;
-
-  weaken $self;
-  my $wrapper;
-  $wrapper = sub {
-    $self->unsubscribe($name => $wrapper);
-    $cb->(@_);
-  };
-  $self->on($name => $wrapper);
-  weaken $wrapper;
-
-  return $wrapper;
-}
-
-sub subscribers { shift->_events->{shift()} ||= [] }
-
-sub unsubscribe {
-  my ($self, $name, $cb) = @_;
-
-  # One
-  if ($cb) {
-    $self->_events->{$name} = [grep { $cb ne $_ } @{$self->_events->{$name}}];
-    delete $self->_events->{$name} unless @{$self->_events->{$name}};
-  }
-
-  # All
-  else { delete $self->_events->{$name} }
-
-  return $self;
-}
-
-1;
+=pod
 
 =head1 NAME
 
@@ -212,3 +143,5 @@ This is free software, licensed under:
 =head1 SEE ALSO
 
 L<Mojo::EventEmitter>, L<Mixin::Event::Dispatch>
+
+=cut
