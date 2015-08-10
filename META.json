@@ -1,0 +1,75 @@
+{
+   "abstract" : "Event emitter role for Moo(se) classes",
+   "author" : [
+      "Dan Book <dbook@cpan.org>"
+   ],
+   "dynamic_config" : 0,
+   "generated_by" : "Dist::Zilla version 5.038, CPAN::Meta::Converter version 2.150005",
+   "license" : [
+      "artistic_2"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : 2
+   },
+   "name" : "Role-EventEmitter",
+   "no_index" : {
+      "directory" : [
+         "t",
+         "xt",
+         "inc",
+         "share",
+         "eg",
+         "examples"
+      ]
+   },
+   "prereqs" : {
+      "configure" : {
+         "requires" : {
+            "ExtUtils::MakeMaker" : "0"
+         }
+      },
+      "develop" : {
+         "requires" : {
+            "Dist::Zilla::PluginBundle::Author::DBOOK" : "0.008"
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "Moo::Role" : "2.000002",
+            "Scalar::Util" : "0",
+            "constant" : "0",
+            "perl" : "5.006"
+         }
+      },
+      "test" : {
+         "requires" : {
+            "Moo" : "2.000002",
+            "Test::More" : "0.88"
+         }
+      }
+   },
+   "provides" : {
+      "Role::EventEmitter" : {
+         "file" : "lib/Role/EventEmitter.pm",
+         "version" : "0.001"
+      }
+   },
+   "release_status" : "stable",
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/Grinnz/Role-EventEmitter/issues"
+      },
+      "homepage" : "https://github.com/Grinnz/Role-EventEmitter",
+      "repository" : {
+         "type" : "git",
+         "url" : "https://github.com/Grinnz/Role-EventEmitter.git",
+         "web" : "https://github.com/Grinnz/Role-EventEmitter"
+      }
+   },
+   "version" : "0.001",
+   "x_contributors" : [
+      "Dan Book <grinnz@grinnz.com>"
+   ]
+}
+
