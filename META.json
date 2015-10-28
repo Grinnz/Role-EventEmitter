@@ -1,10 +1,10 @@
 {
-   "abstract" : "Event emitter role for Moo(se) classes",
+   "abstract" : "Event emitter role",
    "author" : [
       "Dan Book <dbook@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 5.039, CPAN::Meta::Converter version 2.150005",
+   "generated_by" : "Dist::Zilla version 5.040, CPAN::Meta::Converter version 2.150005",
    "license" : [
       "artistic_2"
    ],
@@ -15,12 +15,12 @@
    "name" : "Role-EventEmitter",
    "no_index" : {
       "directory" : [
-         "t",
-         "xt",
+         "eg",
+         "examples",
          "inc",
          "share",
-         "eg",
-         "examples"
+         "t",
+         "xt"
       ]
    },
    "prereqs" : {
@@ -31,20 +31,20 @@
       },
       "develop" : {
          "requires" : {
-            "Dist::Zilla::PluginBundle::Author::DBOOK" : "0.008"
+            "Pod::Coverage::TrustPod" : "0",
+            "Test::Pod" : "1.41",
+            "Test::Pod::Coverage" : "1.08"
          }
       },
       "runtime" : {
          "requires" : {
-            "Moo::Role" : "2.000002",
+            "Role::Tiny" : "2.000001",
             "Scalar::Util" : "0",
-            "constant" : "0",
             "perl" : "5.006"
          }
       },
       "test" : {
          "requires" : {
-            "Moo" : "2.000002",
             "Test::More" : "0.88"
          }
       }
@@ -52,7 +52,7 @@
    "provides" : {
       "Role::EventEmitter" : {
          "file" : "lib/Role/EventEmitter.pm",
-         "version" : "0.001"
+         "version" : "0.002"
       }
    },
    "release_status" : "stable",
@@ -67,7 +67,7 @@
          "web" : "https://github.com/Grinnz/Role-EventEmitter"
       }
    },
-   "version" : "0.001",
+   "version" : "0.002",
    "x_contributors" : [
       "Dan Book <grinnz@grinnz.com>"
    ]

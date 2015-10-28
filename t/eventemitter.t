@@ -1,6 +1,8 @@
 package My::EventEmitter;
-use Moo;
+use Role::Tiny::With;
 with 'Role::EventEmitter';
+
+sub new { bless {}, shift }
 
 package main;
 use strict;

@@ -3,23 +3,16 @@ package Role::EventEmitter;
 use Scalar::Util qw(blessed weaken);
 use constant DEBUG => $ENV{ROLE_EVENTEMITTER_DEBUG} || 0;
 
-use Moo::Role;
+use Role::Tiny;
 
 our $VERSION = '0.002';
-
-has '_events' => (
-  is => 'ro',
-  lazy => 1,
-  default => sub { {} },
-  init_arg => undef,
-);
 
 sub catch { $_[0]->on(error => $_[1]) and return $_[0] }
 
 sub emit {
   my ($self, $name) = (shift, shift);
 
-  if (my $s = $self->_events->{$name}) {
+  if (my $s = $self->{_role_ee_events}{$name}) {
     warn "-- Emit $name in @{[blessed $self]} (@{[scalar @$s]})\n" if DEBUG;
     for my $cb (@$s) { $self->$cb(@_) }
   }
@@ -31,9 +24,9 @@ sub emit {
   return $self;
 }
 
-sub has_subscribers { !!shift->_events->{shift()} }
+sub has_subscribers { !!shift->{_role_ee_events}{shift()} }
 
-sub on { push @{$_[0]->_events->{$_[1]}}, $_[2] and return $_[2] }
+sub on { push @{$_[0]->{_role_ee_events}{$_[1]}}, $_[2] and return $_[2] }
 
 sub once {
   my ($self, $name, $cb) = @_;
@@ -50,19 +43,19 @@ sub once {
   return $wrapper;
 }
 
-sub subscribers { shift->_events->{shift()} ||= [] }
+sub subscribers { shift->{_role_ee_events}{shift()} ||= [] }
 
 sub unsubscribe {
   my ($self, $name, $cb) = @_;
 
   # One
   if ($cb) {
-    $self->_events->{$name} = [grep { $cb ne $_ } @{$self->_events->{$name}}];
-    delete $self->_events->{$name} unless @{$self->_events->{$name}};
+    $self->{_role_ee_events}{$name} = [grep { $cb ne $_ } @{$self->{_role_ee_events}{$name}}];
+    delete $self->{_role_ee_events}{$name} unless @{$self->{_role_ee_events}{$name}};
   }
 
   # All
-  else { delete $self->_events->{$name} }
+  else { delete $self->{_role_ee_events}{$name} }
 
   return $self;
 }
@@ -71,7 +64,7 @@ sub unsubscribe {
 
 =head1 NAME
 
-Role::EventEmitter - Event emitter role for Moo(se) classes
+Role::EventEmitter - Event emitter role
 
 =head1 SYNOPSIS
 
@@ -97,8 +90,9 @@ Role::EventEmitter - Event emitter role for Moo(se) classes
 
 =head1 DESCRIPTION
 
-L<Role::EventEmitter> is a simple L<Moo::Role> for event emitting objects based
-on L<Mojo::EventEmitter>.
+L<Role::EventEmitter> is a simple L<Role::Tiny> role for event emitting objects
+based on L<Mojo::EventEmitter>. This role can be applied to any hash-based
+object class such as those created with L<Class::Tiny>, L<Moo>, or L<Moose>.
 
 =head1 EVENTS
 

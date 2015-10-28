@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-Role::EventEmitter - Event emitter role for Moo(se) classes
+Role::EventEmitter - Event emitter role
 
 =head1 SYNOPSIS
 
@@ -28,8 +28,9 @@ Role::EventEmitter - Event emitter role for Moo(se) classes
 
 =head1 DESCRIPTION
 
-L<Role::EventEmitter> is a simple L<Moo::Role> for event emitting objects based
-on L<Mojo::EventEmitter>.
+L<Role::EventEmitter> is a simple L<Role::Tiny> role for event emitting objects
+based on L<Mojo::EventEmitter>. This role can be applied to any hash-based
+object class such as those created with L<Class::Tiny>, L<Moo>, or L<Moose>.
 
 =head1 EVENTS
 
