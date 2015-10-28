@@ -5,7 +5,7 @@ use constant DEBUG => $ENV{ROLE_EVENTEMITTER_DEBUG} || 0;
 
 use Role::Tiny;
 
-our $VERSION = '0.002';
+our $VERSION = '0.003';
 
 sub catch { $_[0]->on(error => $_[1]) and return $_[0] }
 
