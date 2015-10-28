@@ -26,7 +26,7 @@ sub emit {
 
 sub has_subscribers { !!shift->{_role_ee_events}{shift()} }
 
-sub on { push @{$_[0]->{_role_ee_events}{$_[1]}}, $_[2] and return $_[2] }
+sub on { push @{$_[0]{_role_ee_events}{$_[1]}}, $_[2] and return $_[2] }
 
 sub once {
   my ($self, $name, $cb) = @_;
