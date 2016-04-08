@@ -210,4 +210,5 @@ This is free software, licensed under:
 
 =head1 SEE ALSO
 
-L<Mojo::EventEmitter>, L<Mixin::Event::Dispatch>, L<Beam::Emitter>
+L<Mojo::EventEmitter>, L<Mixin::Event::Dispatch>, L<Beam::Emitter>,
+L<Event::Distributor>
