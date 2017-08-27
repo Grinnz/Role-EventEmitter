@@ -1,5 +1,6 @@
 package Role::EventEmitter;
 
+use Carp 'croak';
 use Scalar::Util qw(blessed weaken);
 use constant DEBUG => $ENV{ROLE_EVENTEMITTER_DEBUG} || 0;
 
@@ -10,8 +11,8 @@ our $VERSION = '0.003';
 sub catch { $_[0]->on(error => $_[1]) and return $_[0] }
 
 sub emit {
-  my ($self, $name) = (shift, shift);
-
+  my $self = shift;
+  my $name = shift;
   if (my $s = $self->{_role_ee_events}{$name}) {
     warn "-- Emit $name in @{[blessed $self]} (@{[scalar @$s]})\n" if DEBUG;
     for my $cb (@$s) { $self->$cb(@_) }
@@ -20,11 +21,10 @@ sub emit {
     warn "-- Emit $name in @{[blessed $self]} (0)\n" if DEBUG;
     die "@{[blessed $self]}: $_[0]" if $name eq 'error';
   }
-
   return $self;
 }
 
-sub has_subscribers { !!shift->{_role_ee_events}{shift()} }
+sub has_subscribers { !!$_[0]->{_role_ee_events}{$_[1]} }
 
 sub on { push @{$_[0]{_role_ee_events}{$_[1]}}, $_[2] and return $_[2] }
 
@@ -43,20 +43,41 @@ sub once {
   return $wrapper;
 }
 
-sub subscribers { shift->{_role_ee_events}{shift()} ||= [] }
+my $has_future;
+sub once_f {
+  my ($self, $name) = @_;
+
+  unless (defined $has_future) {
+    local $@;
+    eval { require Future; $has_future = 1 } or $has_future = 0;
+  }
+  croak "Future is required for once_f method" unless $has_future;
+
+  weaken $self;
+  weaken(my $weak_f = my $f = Future->new);
+  my $wrapper = sub { $weak_f->done(@_) if $weak_f };
+  $f->on_ready(sub { $self->unsubscribe($name => $wrapper) });
+  $self->{_role_ee_futures}{$name}{$wrapper} = $f;
+  $self->on($name => $wrapper);
+
+  return $f;
+}
+
+sub subscribers { $_[0]->{_role_ee_events}{$_[1]} ||= [] }
 
 sub unsubscribe {
   my ($self, $name, $cb) = @_;
-
   # One
   if ($cb) {
     $self->{_role_ee_events}{$name} = [grep { $cb ne $_ } @{$self->{_role_ee_events}{$name}}];
     delete $self->{_role_ee_events}{$name} unless @{$self->{_role_ee_events}{$name}};
+    if (my $f = delete $self->{_role_ee_futures}{$name}{$cb}) { $f->cancel; }
   }
-
   # All
-  else { delete $self->{_role_ee_events}{$name} }
-
+  else {
+    delete $self->{_role_ee_events}{$name};
+    $_->cancel for values %{delete $self->{_role_ee_futures}{$name} || {}};
+  }
   return $self;
 }
 
@@ -161,6 +182,22 @@ Subscribe to event and unsubscribe again after it has been emitted once.
     ...
   });
 
+=head2 once_f
+
+  my $f = $e->once_f('foo');
+
+Subscribe to event as in L</"once">, returning a L<Future> that will be marked
+complete after it has been emitted once. Requires L<Future> to be installed.
+
+  my $f = $e->once_f('foo')->on_done(sub {
+    my ($e, @args) = @_;
+    ...
+  });
+
+To unsubscribe the returned L<Future> early, cancel it.
+
+  $f->cancel;
+
 =head2 subscribers
 
   my $subscribers = $e->subscribers('foo');
@@ -178,7 +215,8 @@ All subscribers for event.
   $e = $e->unsubscribe('foo');
   $e = $e->unsubscribe(foo => $cb);
 
-Unsubscribe from event.
+Unsubscribe from event. When unsubscribing all subscribers for an event, all
+subscribed Futures will also be cancelled.
 
 =head1 DEBUGGING
 
