@@ -99,6 +99,22 @@ Subscribe to event and unsubscribe again after it has been emitted once.
     ...
   });
 
+=head2 once_f
+
+  my $f = $e->once_f('foo');
+
+Subscribe to event as in L</"once">, returning a L<Future> that will be marked
+complete after it has been emitted once. Requires L<Future> to be installed.
+
+  my $f = $e->once_f('foo')->on_done(sub {
+    my ($e, @args) = @_;
+    ...
+  });
+
+To unsubscribe the returned L<Future> early, cancel it.
+
+  $f->cancel;
+
 =head2 subscribers
 
   my $subscribers = $e->subscribers('foo');
@@ -116,7 +132,8 @@ All subscribers for event.
   $e = $e->unsubscribe('foo');
   $e = $e->unsubscribe(foo => $cb);
 
-Unsubscribe from event.
+Unsubscribe from event. When unsubscribing all subscribers for an event, all
+subscribed Futures will also be cancelled.
 
 =head1 DEBUGGING
 
