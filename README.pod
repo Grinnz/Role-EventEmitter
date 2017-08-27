@@ -132,8 +132,7 @@ All subscribers for event.
   $e = $e->unsubscribe('foo');
   $e = $e->unsubscribe(foo => $cb);
 
-Unsubscribe from event. When unsubscribing all subscribers for an event, all
-subscribed Futures will also be cancelled.
+Unsubscribe from event. Related Futures will also be cancelled.
 
 =head1 DEBUGGING
 
