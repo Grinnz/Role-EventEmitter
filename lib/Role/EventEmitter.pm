@@ -16,8 +16,7 @@ sub emit {
   if (my $s = $self->{_role_ee_events}{$name}) {
     warn "-- Emit $name in @{[blessed $self]} (@{[scalar @$s]})\n" if DEBUG;
     for my $cb (@$s) { $self->$cb(@_) }
-  }
-  else {
+  } else {
     warn "-- Emit $name in @{[blessed $self]} (0)\n" if DEBUG;
     die "@{[blessed $self]}: $_[0]" if $name eq 'error';
   }
@@ -53,12 +52,13 @@ sub once_f {
   }
   croak "Future is required for once_f method" unless $has_future;
 
+  my $f = Future->new;
+  my $wrapper = sub { $f->done(@_) };
+  $self->on($name => $wrapper);
   weaken $self;
-  weaken(my $weak_f = my $f = Future->new);
-  my $wrapper = sub { $weak_f->done(@_) if $weak_f };
+  weaken $wrapper;
   $f->on_ready(sub { $self->unsubscribe($name => $wrapper) });
   $self->{_role_ee_futures}{$name}{$wrapper} = $f;
-  $self->on($name => $wrapper);
 
   return $f;
 }
@@ -67,17 +67,14 @@ sub subscribers { $_[0]->{_role_ee_events}{$_[1]} ||= [] }
 
 sub unsubscribe {
   my ($self, $name, $cb) = @_;
-  # One
-  if ($cb) {
+  if ($cb) { # One
     $self->{_role_ee_events}{$name} = [grep { $cb ne $_ } @{$self->{_role_ee_events}{$name}}];
     delete $self->{_role_ee_events}{$name} unless @{$self->{_role_ee_events}{$name}};
     if ($self->{_role_ee_futures}{$name} and my $f = delete $self->{_role_ee_futures}{$name}{$cb}) {
       $f->cancel;
       delete $self->{_role_ee_futures}{$name} unless keys %{$self->{_role_ee_futures}{$name}};
     }
-  }
-  # All
-  else {
+  } else { # All
     delete $self->{_role_ee_events}{$name};
     $_->cancel for values %{delete $self->{_role_ee_futures}{$name} || {}};
   }
