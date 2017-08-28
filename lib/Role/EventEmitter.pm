@@ -71,7 +71,10 @@ sub unsubscribe {
   if ($cb) {
     $self->{_role_ee_events}{$name} = [grep { $cb ne $_ } @{$self->{_role_ee_events}{$name}}];
     delete $self->{_role_ee_events}{$name} unless @{$self->{_role_ee_events}{$name}};
-    if (my $f = delete $self->{_role_ee_futures}{$name}{$cb}) { $f->cancel; }
+    if ($self->{_role_ee_futures}{$name} and my $f = delete $self->{_role_ee_futures}{$name}{$cb}) {
+      $f->cancel;
+      delete $self->{_role_ee_futures}{$name} unless keys %{$self->{_role_ee_futures}{$name}};
+    }
   }
   # All
   else {
