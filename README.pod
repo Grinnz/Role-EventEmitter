@@ -6,25 +6,25 @@ Role::EventEmitter - Event emitter role
 
 =head1 SYNOPSIS
 
-  package Cat;
+  package Channel;
   use Moo;
   with 'Role::EventEmitter';
 
   # Emit events
-  sub poke {
+  sub send_message {
     my $self = shift;
-    $self->emit(roar => 3);
+    $self->emit(message => @_);
   }
 
   package main;
 
   # Subscribe to events
-  my $tiger = Cat->new;
-  $tiger->on(roar => sub {
-    my ($tiger, $times) = @_;
-    say 'RAWR!' for 1 .. $times;
+  my $channel_a = Channel->new;
+  $channel_a->on(message => sub {
+    my ($channel, $text) = @_;
+    say "Received message: $text";
   });
-  $tiger->poke;
+  $channel_a->send_message('All is well');
 
 =head1 DESCRIPTION
 
@@ -156,7 +156,7 @@ by the L<Mojolicious> team.
 
 Copyright (c) 2008-2015 Sebastian Riedel.
 
-Copyright (c) 2015 Dan Book for adaptation to a role.
+Copyright (c) 2015 Dan Book for adaptation to a role and further changes.
 
 This is free software, licensed under:
 

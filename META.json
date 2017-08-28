@@ -39,6 +39,7 @@
       },
       "runtime" : {
          "requires" : {
+            "Carp" : "0",
             "Role::Tiny" : "2.000001",
             "Scalar::Util" : "0",
             "perl" : "5.006"

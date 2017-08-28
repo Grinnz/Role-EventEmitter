@@ -1,7 +1,7 @@
 package Role::EventEmitter;
 
 use Carp 'croak';
-use Scalar::Util qw(blessed weaken);
+use Scalar::Util qw(blessed refaddr weaken);
 use constant DEBUG => $ENV{ROLE_EVENTEMITTER_DEBUG} || 0;
 
 use Role::Tiny;
@@ -55,10 +55,10 @@ sub once_f {
   my $f = Future->new;
   my $wrapper = sub { $f->done(@_) };
   $self->on($name => $wrapper);
+  $self->{_role_ee_futures}{$name}{refaddr $wrapper} = $f;
   weaken $self;
   weaken $wrapper;
   $f->on_ready(sub { $self->unsubscribe($name => $wrapper) });
-  $self->{_role_ee_futures}{$name}{$wrapper} = $f;
 
   return $f;
 }
@@ -68,9 +68,10 @@ sub subscribers { $_[0]->{_role_ee_events}{$_[1]} ||= [] }
 sub unsubscribe {
   my ($self, $name, $cb) = @_;
   if ($cb) { # One
-    $self->{_role_ee_events}{$name} = [grep { $cb ne $_ } @{$self->{_role_ee_events}{$name}}];
+    my $addr = refaddr $cb;
+    $self->{_role_ee_events}{$name} = [grep { $addr != refaddr $_ } @{$self->{_role_ee_events}{$name}}];
     delete $self->{_role_ee_events}{$name} unless @{$self->{_role_ee_events}{$name}};
-    if ($self->{_role_ee_futures}{$name} and my $f = delete $self->{_role_ee_futures}{$name}{$cb}) {
+    if ($self->{_role_ee_futures}{$name} and my $f = delete $self->{_role_ee_futures}{$name}{$addr}) {
       $f->cancel;
       delete $self->{_role_ee_futures}{$name} unless keys %{$self->{_role_ee_futures}{$name}};
     }
@@ -89,25 +90,25 @@ Role::EventEmitter - Event emitter role
 
 =head1 SYNOPSIS
 
-  package Cat;
+  package Channel;
   use Moo;
   with 'Role::EventEmitter';
 
   # Emit events
-  sub poke {
+  sub send_message {
     my $self = shift;
-    $self->emit(roar => 3);
+    $self->emit(message => @_);
   }
 
   package main;
 
   # Subscribe to events
-  my $tiger = Cat->new;
-  $tiger->on(roar => sub {
-    my ($tiger, $times) = @_;
-    say 'RAWR!' for 1 .. $times;
+  my $channel_a = Channel->new;
+  $channel_a->on(message => sub {
+    my ($channel, $text) = @_;
+    say "Received message: $text";
   });
-  $tiger->poke;
+  $channel_a->send_message('All is well');
 
 =head1 DESCRIPTION
 
@@ -239,7 +240,7 @@ by the L<Mojolicious> team.
 
 Copyright (c) 2008-2015 Sebastian Riedel.
 
-Copyright (c) 2015 Dan Book for adaptation to a role.
+Copyright (c) 2015 Dan Book for adaptation to a role and further changes.
 
 This is free software, licensed under:
 

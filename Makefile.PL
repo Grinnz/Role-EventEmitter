@@ -17,6 +17,7 @@ my %WriteMakefileArgs = (
   "MIN_PERL_VERSION" => "5.006",
   "NAME" => "Role::EventEmitter",
   "PREREQ_PM" => {
+    "Carp" => 0,
     "Role::Tiny" => "2.000001",
     "Scalar::Util" => 0
   },
@@ -34,6 +35,7 @@ my %WriteMakefileArgs = (
 
 
 my %FallbackPrereqs = (
+  "Carp" => 0,
   "ExtUtils::MakeMaker" => 0,
   "File::Spec" => 0,
   "Role::Tiny" => "2.000001",
