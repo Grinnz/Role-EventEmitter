@@ -56,11 +56,10 @@ sub once_f {
   my $wrapper = sub { $f->done(@_) };
   $self->on($name => $wrapper);
   $self->{_role_ee_futures}{$name}{refaddr $wrapper} = $f;
+  
   weaken $self;
   weaken $wrapper;
-  $f->on_ready(sub { $self->unsubscribe($name => $wrapper) });
-
-  return $f;
+  return $f->on_ready(sub { $self->unsubscribe($name => $wrapper) });
 }
 
 sub subscribers { $_[0]->{_role_ee_events}{$_[1]} ||= [] }
