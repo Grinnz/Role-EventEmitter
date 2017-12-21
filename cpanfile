@@ -5,3 +5,4 @@ requires 'Scalar::Util';
 test_requires 'Test::More' => '0.88';
 test_requires 'Test::Needs';
 author_requires 'Future';
+author_requires 'Mojolicious' => '7.54';

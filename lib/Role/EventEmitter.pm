@@ -62,6 +62,27 @@ sub once_f {
   return $f->on_ready(sub { $self->unsubscribe($name => $wrapper) });
 }
 
+my $has_promise;
+sub once_p {
+  my ($self, $name) = @_;
+  
+  unless (defined $has_promise) {
+    local $@;
+    eval { require Mojo::Promise; $has_promise = 1 } or $has_promise = 0;
+  }
+  croak "Mojo::Promise is required for once_p method" unless $has_promise;
+  
+  my $p = Mojo::Promise->new;
+  my $wrapper = sub { warn 'resolve'; $p->resolve(@_) };
+  $self->on($name => $wrapper);
+  
+  weaken $self;
+  weaken $wrapper;
+  $p->then(sub { $self->unsubscribe($name => $wrapper) },
+    sub { $self->unsubscribe($name => $wrapper) });
+  return $p;
+}
+
 sub subscribers { $_[0]->{_role_ee_events}{$_[1]} ||= [] }
 
 sub unsubscribe {
@@ -198,6 +219,19 @@ complete after it has been emitted once. Requires L<Future> to be installed.
 To unsubscribe the returned L<Future> early, cancel it.
 
   $f->cancel;
+
+=head2 once_p
+
+  my $p = $e->once_p('foo');
+
+Subscribe to event as in L</"once">, returning a L<Mojo::Promise> that will be
+resolved after it has been emitted once. Requires L<Mojo::Promise> to be
+installed.
+
+  my $p = $e->once_p('foo')->then(sub {
+    my ($e, @args) = @_;
+    ...
+  });
 
 =head2 subscribers
 
