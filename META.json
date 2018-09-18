@@ -32,6 +32,7 @@
       "develop" : {
          "requires" : {
             "Future" : "0",
+            "Mojolicious" : "7.54",
             "Pod::Coverage::TrustPod" : "0",
             "Test::Pod" : "1.41",
             "Test::Pod::Coverage" : "1.08"
