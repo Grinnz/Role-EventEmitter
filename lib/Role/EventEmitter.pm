@@ -73,13 +73,13 @@ sub once_p {
   croak "Mojo::Promise is required for once_p method" unless $has_promise;
   
   my $p = Mojo::Promise->new;
-  my $wrapper = sub { warn 'resolve'; $p->resolve(@_) };
+  my $wrapper = sub { $p->resolve(@_) };
   $self->on($name => $wrapper);
-  
+
   weaken $self;
   weaken $wrapper;
-  $p->then(sub { $self->unsubscribe($name => $wrapper) },
-    sub { $self->unsubscribe($name => $wrapper) });
+  $p->then(sub { $self->unsubscribe($name => $wrapper) if $self and $wrapper },
+    sub { $self->unsubscribe($name => $wrapper) if $self and $wrapper });
   return $p;
 }
 
@@ -216,7 +216,8 @@ complete after it has been emitted once. Requires L<Future> to be installed.
     ...
   });
 
-To unsubscribe the returned L<Future> early, cancel it.
+To unsubscribe the returned L<Future> early, cancel it or any subsequent
+chained L<Future>.
 
   $f->cancel;
 
@@ -226,12 +227,23 @@ To unsubscribe the returned L<Future> early, cancel it.
 
 Subscribe to event as in L</"once">, returning a L<Mojo::Promise> that will be
 resolved after it has been emitted once. Requires L<Mojo::Promise> to be
-installed.
+installed. Note that promises will not settle (or continue the chain) until the
+next tick of the L<Mojo::IOLoop>.
 
   my $p = $e->once_p('foo')->then(sub {
     my ($e, @args) = @_;
     ...
   });
+  $e->emit('foo');
+  $p->wait;
+
+Resolving or rejecting the originally returned L<Mojo::Promise> will
+unsubscribe it early. Note that this must be done on the returned promise and
+not a chained promise!
+
+  my $p = $e->once_p('foo');
+  $p->then(sub { ... });
+  $p->reject;
 
 =head2 subscribers
 
