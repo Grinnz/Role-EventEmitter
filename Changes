@@ -1,4 +1,5 @@
 {{$NEXT}}
+  - Add once_p method to subscribe and return a Mojo::Promise
 
 0.003     2018-02-06 14:13:52 EST
   - Add once_f method to subscribe and return a Future
